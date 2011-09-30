@@ -1,77 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset='utf-8'>
-
-  <title>gavinuhma/appstore @ GitHub</title>
-
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #a13312;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
+<meta charset='utf-8'>
+<title>gavinuhma/appstore @ GitHub</title>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script type="text/javascript">
+var createBucket = function(bucket) {
+  console.log('creating bucket ' + bucket);
+  $.ajax({
+    type: "PUT",
+    url: 'http://api.thriftdb.com/' + bucket,
+    data: '',
+    success: function(res) {
+      console.log('bucket created ' + bucket + ': ' + res);
     }
-    #container {
-      margin: 0 auto;
-      width: 700px;
+  });
+};
+var createCollection = function(bucket, collection, data) {
+  console.log('creating collection ' + collection + ' in bucket ' + bucket + ', data: ' + data);
+  var schema = createCollectionSchema(data);
+  $.ajax({
+    type: "PUT",
+    url: 'http://api.thriftdb.com/' + bucket + '/' + collection,
+    data: schema,
+    success: function(res) {
+      console.log('created collection ' + collection + ' in bucket ' + bucket + ', data: ' + data + ': ' + res);
     }
-    h1 { font-size: 3.8em; color: #5ecced; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #5ecced; }
-    h3 { text-align: center; color: #5ecced; }
-    a { color: #5ecced; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+  });
+};
+var createCollectionSchema = function(collection) {
+  var schema = {'__class__': 'StructSchema'};
+  var i = 0;
+  for (var field in collection) {
+    i++;
+    schema[field] = {'__class__': 'AttributeDescriptor'};
+    schema[field]['thrift_index'] = i;
+    schema[field]['datatype'] = {'__class__': collection[field]['datatype']};
+    schema[field]['is_searchable'] = true;
+  }
+  console.log(schema);
+  return JSON.stringify(schema);
+};
+var collection = {
+  'name': {'datatype':'StringType'},
+  'url': {'datatype':'StringType'}
+};
+$('#createBucket').click(function(e) {
+  createBucket('appstore');
+  e.preventDefault();
+  return false;
+});
+$('#createCollection').click(function(e) {
+  createCollection('appstore', 'apps', collection);
+  e.preventDefault();
+  return false;
+});
+/*curl -X PUT "http://api.thriftdb.com/test_bucket"
+$.getJSON("http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?", {
+  tags: "cat",
+  tagmode: "any",
+  format: "json"
+}, function(data) {
+  $.each(data.items, function(i,item) {
+    $("<img/>").attr("src", item.media.m).appendTo("#images");
+    if ( i == 3 ) return false;
+  });
+});*/
+</script>
+<style type="text/css">
+</style>
 </head>
-
 <body>
-  <a href="http://github.com/gavinuhma/appstore"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/gavinuhma/appstore/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/gavinuhma/appstore/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
-
-    <h1><a href="http://github.com/gavinuhma/appstore">appstore</a>
-      <span class="small">by <a href="http://github.com/gavinuhma">gavinuhma</a></span></h1>
-
-    <div class="description">
-      an appstore
-    </div>
-
-    <h2>Authors</h2>
-<p>Gavin Uhma (gavinmail@gmail.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Gavin Uhma (gavinmail@gmail.com)<br/>      </p>
-
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/gavinuhma/appstore/zipball/master">zip</a> or
-      <a href="http://github.com/gavinuhma/appstore/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/gavinuhma/appstore</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/gavinuhma/appstore">gavinuhma/appstore</a>
-    </div>
-
-  </div>
-
-  
+<a href="#createBucket" id="createBucket">createBucket</a>
+<a href="#createCollection" id="createCollection">createCollection</a>
+<div id="images"></div>
+<a href="http://github.com/gavinuhma/appstore">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+</a> 
 </body>
 </html>
